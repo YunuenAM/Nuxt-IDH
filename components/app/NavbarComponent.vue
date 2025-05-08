@@ -1,31 +1,91 @@
 <template>
-	<div class="sidebar">
+	<div
+		class="sidebar"
+		role="complementary"
+		aria-labelledby="sidebar-title"
+	>
 		<div class="logo">
 			<img
 				src="~/assets/logo.png"
 				alt="Logo"
 			>
-			<h2>HDI</h2>
+			<h2>HDI</h2> <!-- App Name💻 -->
 		</div>
-		<ul class="menu">
+
+		<ul
+			class="menu"
+			role="menu"
+			aria-label="Main Menu"
+		>
+			<!-- Main Page: my Dashboard 🏠 -->
 			<li
-				v-for="item in menuItems.value"
-				:key="item.name"
-				:class="{ active: activeItem === item.name.value }"
-				@click="setActiveItem(item.name)"
+				:class="{ active: activeItem === 'Dashboard' }"
+				role="menuitem"
+				aria-current="page"
+				@click="setActiveItem('Dashboard')"
 			>
-				<span class="icon">
+				<span class="icon Dashboard">
 					<img
-						:src="item.icon"
+						src="~/assets/icons/dashboard.svg"
 						alt="icon"
 					>
 				</span>
-				<span class="text">{{ item.name }}</span>
+				<span class="text">Dashboard</span>
+			</li>
+			<li
+				:class="{ active: activeItem === 'Tablas' }"
+				@click="setActiveItem('Tablas')"
+			>
+				<span class="icon Graphs">
+					<img
+						src="~/assets/icons/bar-chart.svg"
+						alt="icon"
+					>
+				</span>
+				<!-- Data Visualization 📊 -->
+				<span class="text">Tablas</span>
+			</li>
+			<li
+				:class="{ active: activeItem === 'Cuenta' }"
+				role="menuitem"
+				@click="setActiveItem('Cuenta')"
+			>
+				<span class="icon">
+					<img
+						src="~/assets/icons/billing.svg"
+						alt="icon billing"
+					>
+					<!-- Billing Settings 💳 -->
+				</span>
+				<span class="text">Cuenta</span>
+			</li>
+			<li
+				:class="{ active: activeItem === 'Ajustes' }"
+				role="menuitem"
+				@click="setActiveItem('Ajustes')"
+			>
+				<span class="icon">
+					<img
+						src="~/assets/icons/gear.svg"
+						alt="icon gear"
+					>
+					<!-- App Personalization ⚙️ -->
+				</span>
+				<span class="text">Ajustes</span>
 			</li>
 		</ul>
-		<div class="help-panel">
+		<!-- Help panel 🆘 -->
+		<div
+			class="help-panel"
+			role="region"
+			aria-labelledby="help-panel-title"
+		>
 			<h3>¿Necesitas ayuda?</h3>
-			<button @click="contactSupport">
+			<!-- Support Call 📞 -->
+			<button
+				aria-label="Contact Support"
+				@click="contactSupport"
+			>
 				Contáctanos
 			</button>
 		</div>
@@ -34,33 +94,22 @@
 
 <script>
 import { ref } from 'vue';
-import TableroIcon from '~/assets/icons/dashboard.svg';
-import TablasIcon from '~/assets/icons/bar-chart.svg';
-import CuentaIcon from '~/assets/icons/billing.svg';
-import AjustesIcon from '~/assets/icons/gear.svg';
 
 export default {
 	name: 'Sidebar',
 	setup() {
-		const activeItem = ref('Tablero');
-		const menuItems = ref([
-			{ name: 'Tablero', icon: TableroIcon },
-			{ name: 'Tablas', icon: TablasIcon },
-			{ name: 'Cuenta', icon: CuentaIcon },
-			{ name: 'Ajustes', icon: AjustesIcon },
-		]);
+		const activeItem = ref('Dashboard'); // Default 🏠
 
 		const setActiveItem = (item) => {
-			activeItem.value = item;
+			activeItem.value = item; // Update active item
 		};
 
 		const contactSupport = () => {
-			alert('Redirigiendo a soporte...');
+			alert('Redirigiendo a soporte IDH...');
 		};
 
 		return {
 			activeItem,
-			menuItems,
 			setActiveItem,
 			contactSupport,
 		};
@@ -77,22 +126,24 @@ export default {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  padding: 20px 10px;
+  padding: 1.25rem 0.625rem;
   box-shadow: 2px 0 5px rgba(0, 0, 0, 0.2);
 }
 
 .logo {
   text-align: center;
-  margin-bottom: 20px;
+  margin-bottom: 3rem;
+  font-size: 5rem
 }
 
 .logo img {
-  max-width: 80px;
+  max-width: 8.375rem;
 }
 
 .logo h2 {
   font-size: 1.5rem;
-  margin: 10px 0 0;
+  margin: 0.675rem 0 0;
+  color: white;
 }
 
 .menu {
@@ -104,51 +155,55 @@ export default {
 .menu li {
   display: flex;
   align-items: center;
-  padding: 10px 15px;
+  padding: 0.75rem .938rem;
   border-radius: 8px;
   cursor: pointer;
   transition: background 0.3s, transform 0.2s;
+  color: white;
+}
+
+.menu li .icon {
+  margin-right: 0.938rem;
+}
+
+.menu li .icon img {
+  width: 1.75rem;
+  height: 1.75rem;
+  filter: invert(1);
+}
+
+.menu li .text {
+  font-size: 1.1rem;
+  color: white;
 }
 
 .menu li.active,
 .menu li:hover {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.2);
   transform: scale(1.05);
-}
-
-.menu li .icon {
-  margin-right: 10px;
-}
-
-.menu li .icon img {
-  width: 24px;
-  height: 24px;
-}
-
-.menu li .text {
-  font-size: 1rem;
 }
 
 .help-panel {
   text-align: center;
   background: linear-gradient(135deg, #1a2a6c, #b21f1f, #fdbb2d);
-  border-radius: 12px;
-  padding: 15px;
+  border-radius: 0.75rem;
+  padding: 0.75rem;
   color: white;
 }
 
 .help-panel h3 {
   font-size: 1rem;
   margin-bottom: 10px;
+  color: white;
 }
 
 .help-panel button {
-  background: white;
-  color: #04124c;
-  padding: 8px 12px;
+  background: #E07F28;
+  color: white;
+  padding: 10px 15px;
   border: none;
   border-radius: 8px;
-  font-size: 0.9rem;
+  font-size: 1rem;
   cursor: pointer;
   transition: background 0.3s, transform 0.2s;
 }
@@ -157,26 +212,76 @@ export default {
   background: #ddd;
   transform: scale(1.05);
 }
+
+/* Responsive Design 📱 */
+/* Media queries for tablets  */
+@media (max-width: 768px) {
+  .sidebar {
+    width: 12.5rem;
+    height: auto;
+    padding: 1rem 0.5rem;
+
+  }
+
+  .logo {
+    margin-bottom: 1rem;
+  }
+
+  .menu li .text {
+   font-size: 1rem;
+  }
+
+  .help-panel {
+    margin-top: 1rem;
+  }
+}
+
+/* Media queries for mobile  */
+
+@media (max-width: 465px) {
+  .sidebar {
+    width: 4.5rem;
+    height: 100vh;
+    overflow-y:auto;
+
+  }
+
+  .logo img {
+    max-width: 4rem;
+  }
+
+  .logo h2 {
+  display: none;
+  }
+  .menu li  {
+    flex-direction: column;
+    align-items: center;
+    padding: 0.5rem;
+  }
+
+  .menu li .text {
+    font-size: 0.875rem;
+  }
+
+  .menu li .icon{
+    margin-right: 0;
+    margin-bottom: 0.25rem;
+  }
+
+  .menu li .text {
+    font-size: 0.875rem;
+    display: none;
+  }
+
+  .help-panel h3 {
+    font-size: 0.36rem;
+    color: #ddd;
+  }
+
+  .help-panel button {
+    font-size: 0.14rem;
+    padding: 0.5rem 0.75rem;
+  }
+
+}
 </style>
-
-  <style scoped>
-  .navbar {
-    background-color: #333;
-    padding: 1rem;
-  }
-
-  .navbar ul {
-    list-style: none;
-    display: flex;
-    gap: 1rem;
-  }
-
-  .navbar a {
-    color: white;
-    text-decoration: none;
-  }
-
-  .navbar a:hover {
-    text-decoration: underline;
-  }
-  </style>
