@@ -73,7 +73,7 @@
 			</thead>
 			<tbody>
 				<tr
-					v-for="(estado, index) in filteredEstados"
+					v-for="(estado, index) in paginatedEstados"
 					:key="index"
 				>
 					<td>{{ estado.nombre }}</td>
@@ -123,13 +123,30 @@
 			aria-label="Navegación de paginación"
 		>
 			<button
-				v-for="page in totalPages"
+				class="page-button"
+				aria-label="Página anterior"
+				:disabled="currentPage === 1"
+				@click="previousPage"
+			>
+				←
+			</button>
+			<button
+				v-for="page in visiblePages"
 				:key="page"
 				class="page-button"
 				:aria-label="'Página ' + page"
+				:class="{ active: page === currentPage }"
 				@click="goToPage(page)"
 			>
 				{{ page }}
+			</button>
+			<button
+				class="page-button"
+				aria-label="Página siguiente"
+				:disabled="currentPage === totalPages"
+				@click="nextPage"
+			>
+				→
 			</button>
 		</div>
 	</div>
@@ -144,7 +161,8 @@ const estadosUnicos = ref([]);
 const aniosUnicos = ref([]);
 const filteredEstados = ref([]);
 const currentPage = ref(1);
-const itemsPerPage = 10;
+const itemsPerPage = ref(6);
+const maxVisiblePages = 3;
 
 // Generar datos aleatorios
 const generarDatos = () => {
@@ -231,21 +249,42 @@ function goToPage(page) {
 	currentPage.value = page;
 }
 
+// Ir a la página anterior
+function previousPage() {
+	if (currentPage.value > 1) {
+		currentPage.value -= 1;
+	}
+}
+
+// Ir a la siguiente página
+function nextPage() {
+	if (currentPage.value < totalPages.value) {
+		currentPage.value += 1;
+	}
+}
+
 // Obtener datos paginados
 const paginatedEstados = computed(() => {
-	const start = (currentPage.value - 1) * itemsPerPage;
-	const end = currentPage.value * itemsPerPage;
+	const start = (currentPage.value - 1) * itemsPerPage.value;
+	const end = currentPage.value * itemsPerPage.value;
 	return filteredEstados.value.slice(start, end);
 });
 
 // Total de páginas para paginación
 const totalPages = computed(() => {
-	return Math.ceil(filteredEstados.value.length / itemsPerPage);
+	return Math.ceil(filteredEstados.value.length / itemsPerPage.value);
+});
+
+// Páginas visibles
+const visiblePages = computed(() => {
+	const startPage = Math.max(1, currentPage.value - Math.floor(maxVisiblePages / 2));
+	const endPage = Math.min(totalPages.value, startPage + maxVisiblePages - 1);
+	return Array.from({ length: endPage - startPage + 1 }, (_, i) => startPage + i);
 });
 
 // Alternar menú de opciones
 function toggleMenu(index) {
-	filteredEstados.value = filteredEstados.value.map((estado, i) => ({
+	paginatedEstados.value = paginatedEstados.value.map((estado, i) => ({
 		...estado,
 		showMenu: i === index ? !estado.showMenu : false,
 	}));
