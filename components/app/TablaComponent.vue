@@ -4,11 +4,9 @@
 			<select
 				class="dropdown"
 				aria-label="Filtrar por estado"
-				@change="filterByState($event.target.value)"
+				multiple
+				@change="filterByState([...$event.target.selectedOptions].map(option => option.value))"
 			>
-				<option value="">
-					Selecciona Estado
-				</option>
 				<option
 					v-for="estado in estadosUnicos"
 					:key="estado"
@@ -20,11 +18,9 @@
 			<select
 				class="dropdown"
 				aria-label="Filtrar por año"
-				@change="filterByYear($event.target.value)"
+				multiple
+				@change="filterByYear([...$event.target.selectedOptions].map(option => option.value))"
 			>
-				<option value="">
-					Selecciona Año
-				</option>
 				<option
 					v-for="anio in aniosUnicos"
 					:key="anio"
@@ -159,7 +155,7 @@ import { ref, computed, onMounted } from 'vue';
 const estados = ref([]);
 const estadosUnicos = ref([]);
 const aniosUnicos = ref([]);
-const filteredEstados = ref([]);
+const selectedFilters = ref({ estados: [], anios: [] });
 const currentPage = ref(1);
 const itemsPerPage = ref(6);
 const maxVisiblePages = 3;
@@ -173,6 +169,7 @@ const generarDatos = () => {
 		'Campeche',
 		'Chiapas',
 		'Chihuahua',
+		'Ciudad de México',
 		'Coahuila',
 		'Colima',
 		'Durango',
@@ -180,7 +177,6 @@ const generarDatos = () => {
 		'Guerrero',
 		'Hidalgo',
 		'Jalisco',
-		'México',
 		'Michoacán',
 		'Morelos',
 		'Nayarit',
@@ -220,48 +216,63 @@ const generarDatos = () => {
 	aniosUnicos.value = anios;
 };
 
+// Filtrar datos
+const filteredEstados = computed(() => {
+	let filtered = [...estados.value];
+	if (selectedFilters.value.estados.length) {
+		filtered = filtered.filter(estado =>
+			selectedFilters.value.estados.includes(estado.nombre),
+		);
+	}
+	if (selectedFilters.value.anios.length) {
+		filtered = filtered.filter(estado =>
+			selectedFilters.value.anios.includes(estado.anio.toString()),
+		);
+	}
+	return filtered;
+});
+
 // Filtrar por estado
-function filterByState(estado) {
-	filteredEstados.value = estados.value.filter(item =>
-		estado ? item.nombre === estado : true,
-	);
-}
+const filterByState = (selectedEstados) => {
+	selectedFilters.value.estados = selectedEstados;
+	currentPage.value = 1; // Reiniciar a la primera página
+};
 
 // Filtrar por año
-function filterByYear(anio) {
-	filteredEstados.value = estados.value.filter(item =>
-		anio ? item.anio === parseInt(anio) : true,
-	);
-}
+const filterByYear = (selectedAnios) => {
+	selectedFilters.value.anios = selectedAnios;
+	currentPage.value = 1; // Reiniciar a la primera página
+};
 
 // Ordenar datos
-function sortData(order) {
+const sortData = (order) => {
 	if (order === 'asc') {
-		filteredEstados.value.sort((a, b) => a.idh - b.idh);
+		estados.value.sort((a, b) => a.idh - b.idh);
 	}
 	else if (order === 'desc') {
-		filteredEstados.value.sort((a, b) => b.idh - a.idh);
+		estados.value.sort((a, b) => b.idh - a.idh);
 	}
-}
+	currentPage.value = 1; // Reiniciar a la primera página
+};
 
 // Cambiar página
-function goToPage(page) {
+const goToPage = (page) => {
 	currentPage.value = page;
-}
+};
 
 // Ir a la página anterior
-function previousPage() {
+const previousPage = () => {
 	if (currentPage.value > 1) {
 		currentPage.value -= 1;
 	}
-}
+};
 
 // Ir a la siguiente página
-function nextPage() {
+const nextPage = () => {
 	if (currentPage.value < totalPages.value) {
 		currentPage.value += 1;
 	}
-}
+};
 
 // Obtener datos paginados
 const paginatedEstados = computed(() => {
@@ -283,12 +294,12 @@ const visiblePages = computed(() => {
 });
 
 // Alternar menú de opciones
-function toggleMenu(index) {
+const toggleMenu = (index) => {
 	paginatedEstados.value = paginatedEstados.value.map((estado, i) => ({
 		...estado,
 		showMenu: i === index ? !estado.showMenu : false,
 	}));
-}
+};
 
 // Generar los datos al montar el componente
 onMounted(() => {
