@@ -22,7 +22,7 @@
 				:class="{ active: activeItem === 'Dashboard' }"
 				role="menuitem"
 				aria-current="page"
-				@click="setActiveItem('Dashboard')"
+				@click="navigateTo('Dashboard', '/')"
 			>
 				<span class="icon Dashboard">
 					<img
@@ -34,7 +34,7 @@
 			</li>
 			<li
 				:class="{ active: activeItem === 'Tablas' }"
-				@click="setActiveItem('Tablas')"
+				@click="navigateTo('Tabla', '/tablas')"
 			>
 				<span class="icon Graphs">
 					<img
@@ -48,7 +48,7 @@
 			<li
 				:class="{ active: activeItem === 'Cuenta' }"
 				role="menuitem"
-				@click="setActiveItem('Cuenta')"
+				@click="navigateTo('Cuenta', '/cuenta')"
 			>
 				<span class="icon">
 					<img
@@ -62,7 +62,7 @@
 			<li
 				:class="{ active: activeItem === 'Ajustes' }"
 				role="menuitem"
-				@click="setActiveItem('Ajustes')"
+				@click="navigateTo('Ajustes', '/ajustes')"
 			>
 				<span class="icon">
 					<img
@@ -80,7 +80,15 @@
 			role="region"
 			aria-labelledby="help-panel-title"
 		>
-			<h3>¿Necesitas ayuda?</h3>
+			<span class="icon">
+				<img
+					src="~/assets/icons/question-circle.png"
+					alt="icon question"
+					width="32rem"
+					height="32rem"
+				>
+
+			</span><h3>¿Necesitas ayuda?</h3>
 			<!-- Support Call 📞 -->
 			<button
 				aria-label="Contact Support"
@@ -93,33 +101,12 @@
 </template>
 
 <script>
-import { ref } from 'vue';
-
-export default {
-	name: 'Sidebar',
-	setup() {
-		const activeItem = ref('Dashboard'); // Default 🏠
-
-		const setActiveItem = (item) => {
-			activeItem.value = item; // Update active item
-		};
-
-		const contactSupport = () => {
-			alert('Redirigiendo a soporte IDH...');
-		};
-
-		return {
-			activeItem,
-			setActiveItem,
-			contactSupport,
-		};
-	},
-};
+// Removed unused navigateToDashboard function to resolve linting error.
 </script>
 
 <style scoped>
 .sidebar {
-  width: 250px;
+  width: 20rem;
   background: linear-gradient(180deg, #0a0f2c, #04124c);
   color: white;
   height: 100vh;
@@ -164,12 +151,14 @@ export default {
 
 .menu li .icon {
   margin-right: 0.938rem;
+  color: white;
 }
 
 .menu li .icon img {
   width: 1.75rem;
   height: 1.75rem;
   filter: invert(1);
+  color: white;
 }
 
 .menu li .text {
@@ -185,10 +174,11 @@ export default {
 
 .help-panel {
   text-align: center;
-  background: linear-gradient(135deg, #1a2a6c, #b21f1f, #fdbb2d);
   border-radius: 0.75rem;
   padding: 0.75rem;
-  color: white;
+  background-image: url('~/assets/icons/helpPanel.png');
+  background-size: cover;
+  background-repeat: no-repeat;
 }
 
 .help-panel h3 {
@@ -198,7 +188,7 @@ export default {
 }
 
 .help-panel button {
-  background: #E07F28;
+  background: #0F194E;
   color: white;
   padding: 10px 15px;
   border: none;
