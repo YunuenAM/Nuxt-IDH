@@ -8,6 +8,8 @@ const selectedFilters = ref({ estados: [], anios: [] });
 const currentPage = ref(1);
 const itemsPerPage = ref(6);
 const maxVisiblePages = 3;
+const estadoSelectKey = ref(0);
+const anioSelectKey = ref(0);
 
 const generarDatos = () => {
 	const estadosNombres = [
@@ -43,7 +45,7 @@ const generarDatos = () => {
 		'Yucatán',
 		'Zacatecas',
 	];
-	const anios = [2020, 2021, 2022, 2023, 2024, 2025];
+	const anios = [2019, 2020, 2021, 2022, 2023, 2024, 2025];
 
 	const datosGenerados = [];
 
@@ -63,7 +65,13 @@ const generarDatos = () => {
 
 	aniosUnicos.value = anios;
 };
-
+const limpiarCampos = () => {
+	selectedFilters.value.estados = [];
+	selectedFilters.value.anios = [];
+	estadoSelectKey.value += 1;
+	anioSelectKey.value += 1;
+	currentPage.value = 1;
+};
 const filteredEstados = computed(() => {
 	let filtered = [...estados.value];
 	if (selectedFilters.value.estados.length) {
@@ -140,6 +148,7 @@ const toggleMenu = (index) => {
 
 onMounted(() => {
 	generarDatos();
+	limpiarCampos();
 });
 </script>
 
@@ -152,6 +161,8 @@ onMounted(() => {
 			<!-- Filtro por Estado -->
 			<div class="filter-group-row">
 				<select
+					:key="estadoSelectKey"
+					v-model="selectedFilters.estados"
 					class="dropdown"
 					aria-label="Filtrar por estado"
 					multiple
@@ -172,6 +183,8 @@ onMounted(() => {
 			<!-- Filtro por Año -->
 			<div class="filter-group-row">
 				<select
+					:key="anioSelectKey"
+					v-model="selectedFilters.anios"
 					class="dropdown"
 					aria-label="Filtrar por año"
 					multiple
@@ -208,6 +221,15 @@ onMounted(() => {
 			</div>
 		</div>
 
+		<!-- Botón de Limpiar -->
+		<div class="clear-button-container">
+			<button
+				class="clear-button"
+				@click="limpiarCampos"
+			>
+				Limpiar Campos
+			</button>
+		</div>
 		<!-- Tabla -->
 		<table
 			class="tabla"
