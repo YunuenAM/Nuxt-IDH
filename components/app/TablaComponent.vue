@@ -4,26 +4,49 @@
 			<select
 				class="dropdown"
 				aria-label="Filtrar por estado"
+				@change="filterByState($event.target.value)"
 			>
-				<option>Selecciona Estado</option>
-				<option>Aguascalientes</option>
-				<option>Baja California</option>
+				<option value="">
+					Selecciona Estado
+				</option>
+				<option
+					v-for="estado in estadosUnicos"
+					:key="estado"
+					:value="estado"
+				>
+					{{ estado }}
+				</option>
 			</select>
 			<select
 				class="dropdown"
 				aria-label="Filtrar por año"
+				@change="filterByYear($event.target.value)"
 			>
-				<option>Selecciona Año</option>
-				<option>2025</option>
-				<option>2024</option>
+				<option value="">
+					Selecciona Año
+				</option>
+				<option
+					v-for="anio in aniosUnicos"
+					:key="anio"
+					:value="anio"
+				>
+					{{ anio }}
+				</option>
 			</select>
 			<select
 				class="dropdown"
 				aria-label="Ordenar resultados"
+				@change="sortData($event.target.value)"
 			>
-				<option>Ordenar</option>
-				<option>Ascendente</option>
-				<option>Descendente</option>
+				<option value="">
+					Ordenar
+				</option>
+				<option value="asc">
+					Ascendente
+				</option>
+				<option value="desc">
+					Descendente
+				</option>
 			</select>
 		</div>
 
@@ -50,7 +73,7 @@
 			</thead>
 			<tbody>
 				<tr
-					v-for="(estado, index) in estados"
+					v-for="(estado, index) in filteredEstados"
 					:key="index"
 				>
 					<td>{{ estado.nombre }}</td>
@@ -83,7 +106,6 @@
 								✏️ Editar
 							</button>
 							<button
-
 								class="dropdown-item"
 								aria-label="Eliminar estado {{ estado.nombre }}"
 							>
@@ -101,49 +123,138 @@
 			aria-label="Navegación de paginación"
 		>
 			<button
+				v-for="page in totalPages"
+				:key="page"
 				class="page-button"
-				aria-label="Página 1"
+				:aria-label="'Página ' + page"
+				@click="goToPage(page)"
 			>
-				1
-			</button>
-			<button
-				class="page-button"
-				aria-label="Página 2"
-			>
-				2
-			</button>
-			<button
-				class="page-button"
-				aria-label="Página 3"
-			>
-				3
+				{{ page }}
 			</button>
 		</div>
 	</div>
 </template>
 
-<script>
-export default {
-	data() {
-		return {
-			estados: [
-				{ nombre: 'Aguascalientes', anio: 2025, idh: '0.821', showMenu: false },
-				{ nombre: 'Baja California', anio: 2025, idh: '0.702', showMenu: false },
-				{ nombre: 'Baja California Sur', anio: 2025, idh: '0.605', showMenu: false },
-				{ nombre: 'Campeche', anio: 2025, idh: '0.750', showMenu: false },
-				{ nombre: 'Coahuila', anio: 2025, idh: '0.800', showMenu: false },
-			],
-		};
-	},
-	methods: {
-		toggleMenu(index) {
-			this.estados = this.estados.map((estado, i) => ({
-				...estado,
-				showMenu: i === index ? !estado.showMenu : false,
-			}));
-		},
-	},
+<script setup>
+import { ref, computed, onMounted } from 'vue';
+
+// Estados iniciales
+const estados = ref([]);
+const estadosUnicos = ref([]);
+const aniosUnicos = ref([]);
+const filteredEstados = ref([]);
+const currentPage = ref(1);
+const itemsPerPage = 10;
+
+// Generar datos aleatorios
+const generarDatos = () => {
+	const estadosNombres = [
+		'Aguascalientes',
+		'Baja California',
+		'Baja California Sur',
+		'Campeche',
+		'Chiapas',
+		'Chihuahua',
+		'Coahuila',
+		'Colima',
+		'Durango',
+		'Guanajuato',
+		'Guerrero',
+		'Hidalgo',
+		'Jalisco',
+		'México',
+		'Michoacán',
+		'Morelos',
+		'Nayarit',
+		'Nuevo León',
+		'Oaxaca',
+		'Puebla',
+		'Querétaro',
+		'Quintana Roo',
+		'San Luis Potosí',
+		'Sinaloa',
+		'Sonora',
+		'Tabasco',
+		'Tamaulipas',
+		'Tlaxcala',
+		'Veracruz',
+		'Yucatán',
+		'Zacatecas',
+	];
+	const anios = [2020, 2021, 2022, 2023, 2024, 2025];
+
+	const datosGenerados = [];
+
+	estadosNombres.forEach((estado) => {
+		anios.forEach((anio) => {
+			datosGenerados.push({
+				nombre: estado,
+				anio: anio,
+				idh: (Math.random() * (1 - 0.5) + 0.5).toFixed(3),
+				showMenu: false,
+			});
+		});
+	});
+
+	estados.value = datosGenerados;
+	estadosUnicos.value = estadosNombres;
+
+	aniosUnicos.value = anios;
 };
+
+// Filtrar por estado
+function filterByState(estado) {
+	filteredEstados.value = estados.value.filter(item =>
+		estado ? item.nombre === estado : true,
+	);
+}
+
+// Filtrar por año
+function filterByYear(anio) {
+	filteredEstados.value = estados.value.filter(item =>
+		anio ? item.anio === parseInt(anio) : true,
+	);
+}
+
+// Ordenar datos
+function sortData(order) {
+	if (order === 'asc') {
+		filteredEstados.value.sort((a, b) => a.idh - b.idh);
+	}
+	else if (order === 'desc') {
+		filteredEstados.value.sort((a, b) => b.idh - a.idh);
+	}
+}
+
+// Cambiar página
+function goToPage(page) {
+	currentPage.value = page;
+}
+
+// Obtener datos paginados
+const paginatedEstados = computed(() => {
+	const start = (currentPage.value - 1) * itemsPerPage;
+	const end = currentPage.value * itemsPerPage;
+	return filteredEstados.value.slice(start, end);
+});
+
+// Total de páginas para paginación
+const totalPages = computed(() => {
+	return Math.ceil(filteredEstados.value.length / itemsPerPage);
+});
+
+// Alternar menú de opciones
+function toggleMenu(index) {
+	filteredEstados.value = filteredEstados.value.map((estado, i) => ({
+		...estado,
+		showMenu: i === index ? !estado.showMenu : false,
+	}));
+}
+
+// Generar los datos al montar el componente
+onMounted(() => {
+	generarDatos();
+});
 </script>
 
 <style scoped>
@@ -151,7 +262,7 @@ export default {
 	padding: 1.5rem;
 	background: linear-gradient(180deg, #0a254a, #112);
 	border-radius: 8px;
-    width: 100%;
+	width: 100%;
 }
 
 .filters {
@@ -184,7 +295,7 @@ export default {
 	color: white;
 	text-align: center;
 	font-size: 0.9rem;
-    background: linear-gradient(180deg, #0a254a, #112);
+	background: linear-gradient(180deg, #0a254a, #112);
 }
 
 .tabla th {
