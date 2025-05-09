@@ -1,49 +1,211 @@
+<script setup>
+import { ref, computed, onMounted } from 'vue';
+
+const estados = ref([]);
+const estadosUnicos = ref([]);
+const aniosUnicos = ref([]);
+const selectedFilters = ref({ estados: [], anios: [] });
+const currentPage = ref(1);
+const itemsPerPage = ref(6);
+const maxVisiblePages = 3;
+
+const generarDatos = () => {
+	const estadosNombres = [
+		'Aguascalientes',
+		'Baja California',
+		'Baja California Sur',
+		'Campeche',
+		'Chiapas',
+		'Chihuahua',
+		'Ciudad de México',
+		'Coahuila',
+		'Colima',
+		'Durango',
+		'Guanajuato',
+		'Guerrero',
+		'Hidalgo',
+		'Jalisco',
+		'Michoacán',
+		'Morelos',
+		'Nayarit',
+		'Nuevo León',
+		'Oaxaca',
+		'Puebla',
+		'Querétaro',
+		'Quintana Roo',
+		'San Luis Potosí',
+		'Sinaloa',
+		'Sonora',
+		'Tabasco',
+		'Tamaulipas',
+		'Tlaxcala',
+		'Veracruz',
+		'Yucatán',
+		'Zacatecas',
+	];
+	const anios = [2020, 2021, 2022, 2023, 2024, 2025];
+
+	const datosGenerados = [];
+
+	estadosNombres.forEach((estado) => {
+		anios.forEach((anio) => {
+			datosGenerados.push({
+				nombre: estado,
+				anio: anio,
+				idh: (Math.random() * (1 - 0.5) + 0.5).toFixed(3),
+				showMenu: false,
+			});
+		});
+	});
+
+	estados.value = datosGenerados;
+	estadosUnicos.value = estadosNombres;
+
+	aniosUnicos.value = anios;
+};
+
+const filteredEstados = computed(() => {
+	let filtered = [...estados.value];
+	if (selectedFilters.value.estados.length) {
+		filtered = filtered.filter(estado =>
+			selectedFilters.value.estados.includes(estado.nombre),
+		);
+	}
+	if (selectedFilters.value.anios.length) {
+		filtered = filtered.filter(estado =>
+			selectedFilters.value.anios.includes(estado.anio.toString()),
+		);
+	}
+	return filtered;
+});
+
+const filterByState = (selectedEstados) => {
+	selectedFilters.value.estados = selectedEstados;
+	currentPage.value = 1; // Reiniciar a la primera página
+};
+
+const filterByYear = (selectedAnios) => {
+	selectedFilters.value.anios = selectedAnios;
+	currentPage.value = 1; // Reiniciar a la primera página
+};
+
+const sortData = (order) => {
+	if (order === 'asc') {
+		estados.value.sort((a, b) => a.idh - b.idh);
+	}
+	else if (order === 'desc') {
+		estados.value.sort((a, b) => b.idh - a.idh);
+	}
+	currentPage.value = 1;
+};
+
+const goToPage = (page) => {
+	currentPage.value = page;
+};
+
+const previousPage = () => {
+	if (currentPage.value > 1) {
+		currentPage.value -= 1;
+	}
+};
+
+const nextPage = () => {
+	if (currentPage.value < totalPages.value) {
+		currentPage.value += 1;
+	}
+};
+
+const paginatedEstados = computed(() => {
+	const start = (currentPage.value - 1) * itemsPerPage.value;
+	const end = currentPage.value * itemsPerPage.value;
+	return filteredEstados.value.slice(start, end);
+});
+
+const totalPages = computed(() => {
+	return Math.ceil(filteredEstados.value.length / itemsPerPage.value);
+});
+
+const visiblePages = computed(() => {
+	const startPage = Math.max(1, currentPage.value - Math.floor(maxVisiblePages / 2));
+	const endPage = Math.min(totalPages.value, startPage + maxVisiblePages - 1);
+	return Array.from({ length: endPage - startPage + 1 }, (_, i) => startPage + i);
+});
+
+const toggleMenu = (index) => {
+	paginatedEstados.value = paginatedEstados.value.map((estado, i) => ({
+		...estado,
+		showMenu: i === index ? !estado.showMenu : false,
+	}));
+};
+
+onMounted(() => {
+	generarDatos();
+});
+</script>
+
 <template>
 	<div class="tabla-container">
 		<div class="filters">
-			<select
-				class="dropdown"
-				aria-label="Filtrar por estado"
-				multiple
-				@change="filterByState([...$event.target.selectedOptions].map(option => option.value))"
-			>
-				<option
-					v-for="estado in estadosUnicos"
-					:key="estado"
-					:value="estado"
+			<h2 class="filters-title">
+				Resumen Índice de Desarrollo Humano en México
+			</h2>
+			<!-- Filtro por Estado -->
+			<div class="filter-group-row">
+				<select
+					class="dropdown"
+					aria-label="Filtrar por estado"
+					multiple
+					:title="'Mantén presionada la tecla Ctrl (Cmd en Mac) para seleccionar más de uno'"
+					@change="filterByState([...$event.target.selectedOptions].map(option => option.value))"
 				>
-					{{ estado }}
-				</option>
-			</select>
-			<select
-				class="dropdown"
-				aria-label="Filtrar por año"
-				multiple
-				@change="filterByYear([...$event.target.selectedOptions].map(option => option.value))"
-			>
-				<option
-					v-for="anio in aniosUnicos"
-					:key="anio"
-					:value="anio"
+					<option
+						v-for="estado in estadosUnicos"
+						:key="estado"
+						:value="estado"
+					>
+						{{ estado }}
+					</option>
+				</select>
+				<tooltip message="Mantén presionada la tecla Ctrl (Cmd en Mac) para seleccionar más de uno" />
+			</div>
+
+			<!-- Filtro por Año -->
+			<div class="filter-group-row">
+				<select
+					class="dropdown"
+					aria-label="Filtrar por año"
+					multiple
+					:title="'Mantén presionada la tecla Ctrl (Cmd en Mac) para seleccionar más de uno'"
+					@change="filterByYear([...$event.target.selectedOptions].map(option => option.value))"
 				>
-					{{ anio }}
-				</option>
-			</select>
-			<select
-				class="dropdown"
-				aria-label="Ordenar resultados"
-				@change="sortData($event.target.value)"
-			>
-				<option value="">
-					Ordenar
-				</option>
-				<option value="asc">
-					Ascendente
-				</option>
-				<option value="desc">
-					Descendente
-				</option>
-			</select>
+					<option
+						v-for="anio in aniosUnicos"
+						:key="anio"
+						:value="anio"
+					>
+						{{ anio }}
+					</option>
+				</select>
+			</div>
+
+			<!-- Ordenar -->
+			<div class="filter-group-row">
+				<select
+					class="dropdown"
+					aria-label="Ordenar resultados"
+					@change="sortData($event.target.value)"
+				>
+					<option value="">
+						Ordenar
+					</option>
+					<option value="asc">
+						Ascendente
+					</option>
+					<option value="desc">
+						Descendente
+					</option>
+				</select>
+			</div>
 		</div>
 
 		<!-- Tabla -->
@@ -148,165 +310,6 @@
 	</div>
 </template>
 
-<script setup>
-import { ref, computed, onMounted } from 'vue';
-
-// Estados iniciales
-const estados = ref([]);
-const estadosUnicos = ref([]);
-const aniosUnicos = ref([]);
-const selectedFilters = ref({ estados: [], anios: [] });
-const currentPage = ref(1);
-const itemsPerPage = ref(6);
-const maxVisiblePages = 3;
-
-// Generar datos aleatorios
-const generarDatos = () => {
-	const estadosNombres = [
-		'Aguascalientes',
-		'Baja California',
-		'Baja California Sur',
-		'Campeche',
-		'Chiapas',
-		'Chihuahua',
-		'Ciudad de México',
-		'Coahuila',
-		'Colima',
-		'Durango',
-		'Guanajuato',
-		'Guerrero',
-		'Hidalgo',
-		'Jalisco',
-		'Michoacán',
-		'Morelos',
-		'Nayarit',
-		'Nuevo León',
-		'Oaxaca',
-		'Puebla',
-		'Querétaro',
-		'Quintana Roo',
-		'San Luis Potosí',
-		'Sinaloa',
-		'Sonora',
-		'Tabasco',
-		'Tamaulipas',
-		'Tlaxcala',
-		'Veracruz',
-		'Yucatán',
-		'Zacatecas',
-	];
-	const anios = [2020, 2021, 2022, 2023, 2024, 2025];
-
-	const datosGenerados = [];
-
-	estadosNombres.forEach((estado) => {
-		anios.forEach((anio) => {
-			datosGenerados.push({
-				nombre: estado,
-				anio: anio,
-				idh: (Math.random() * (1 - 0.5) + 0.5).toFixed(3),
-				showMenu: false,
-			});
-		});
-	});
-
-	estados.value = datosGenerados;
-	estadosUnicos.value = estadosNombres;
-
-	aniosUnicos.value = anios;
-};
-
-// Filtrar datos
-const filteredEstados = computed(() => {
-	let filtered = [...estados.value];
-	if (selectedFilters.value.estados.length) {
-		filtered = filtered.filter(estado =>
-			selectedFilters.value.estados.includes(estado.nombre),
-		);
-	}
-	if (selectedFilters.value.anios.length) {
-		filtered = filtered.filter(estado =>
-			selectedFilters.value.anios.includes(estado.anio.toString()),
-		);
-	}
-	return filtered;
-});
-
-// Filtrar por estado
-const filterByState = (selectedEstados) => {
-	selectedFilters.value.estados = selectedEstados;
-	currentPage.value = 1; // Reiniciar a la primera página
-};
-
-// Filtrar por año
-const filterByYear = (selectedAnios) => {
-	selectedFilters.value.anios = selectedAnios;
-	currentPage.value = 1; // Reiniciar a la primera página
-};
-
-// Ordenar datos
-const sortData = (order) => {
-	if (order === 'asc') {
-		estados.value.sort((a, b) => a.idh - b.idh);
-	}
-	else if (order === 'desc') {
-		estados.value.sort((a, b) => b.idh - a.idh);
-	}
-	currentPage.value = 1; // Reiniciar a la primera página
-};
-
-// Cambiar página
-const goToPage = (page) => {
-	currentPage.value = page;
-};
-
-// Ir a la página anterior
-const previousPage = () => {
-	if (currentPage.value > 1) {
-		currentPage.value -= 1;
-	}
-};
-
-// Ir a la siguiente página
-const nextPage = () => {
-	if (currentPage.value < totalPages.value) {
-		currentPage.value += 1;
-	}
-};
-
-// Obtener datos paginados
-const paginatedEstados = computed(() => {
-	const start = (currentPage.value - 1) * itemsPerPage.value;
-	const end = currentPage.value * itemsPerPage.value;
-	return filteredEstados.value.slice(start, end);
-});
-
-// Total de páginas para paginación
-const totalPages = computed(() => {
-	return Math.ceil(filteredEstados.value.length / itemsPerPage.value);
-});
-
-// Páginas visibles
-const visiblePages = computed(() => {
-	const startPage = Math.max(1, currentPage.value - Math.floor(maxVisiblePages / 2));
-	const endPage = Math.min(totalPages.value, startPage + maxVisiblePages - 1);
-	return Array.from({ length: endPage - startPage + 1 }, (_, i) => startPage + i);
-});
-
-// Alternar menú de opciones
-const toggleMenu = (index) => {
-	paginatedEstados.value = paginatedEstados.value.map((estado, i) => ({
-		...estado,
-		showMenu: i === index ? !estado.showMenu : false,
-	}));
-};
-
-// Generar los datos al montar el componente
-onMounted(() => {
-	generarDatos();
-});
-</script>
-
 <style scoped>
 .tabla-container {
 	padding: 1.5rem;
@@ -320,6 +323,14 @@ onMounted(() => {
 	flex-wrap: wrap;
 	gap: 1rem;
 	margin-bottom: 1rem;
+}
+.filters-title {
+	color: white;
+	font-size: 1.5rem;
+	font-weight: bold;
+	margin-bottom: 0.5rem;
+	text-align: left;
+
 }
 
 .dropdown {
