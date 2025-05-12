@@ -9,8 +9,10 @@
 				src="~/assets/logo.png"
 				alt="Logo"
 			>
-			<h2>HDI</h2> <!-- App Name💻 -->
+			<h2>IDH</h2> <!-- App Name💻 -->
 		</div>
+
+		<!-- -- Buscador 🔎 -->
 
 		<ul
 			class="menu"
@@ -42,6 +44,7 @@
 						alt="icon"
 					>
 				</span>
+
 				<!-- Data Visualization 📊 -->
 				<span class="text">Tablas</span>
 			</li>

@@ -10,7 +10,7 @@ const itemsPerPage = ref(6);
 const maxVisiblePages = 3;
 const estadoSelectKey = ref(0);
 const anioSelectKey = ref(0);
-
+const estadoBuscado = ref('');
 const generarDatos = () => {
 	const estadosNombres = [
 		'Aguascalientes',
@@ -79,6 +79,13 @@ const filteredEstados = computed(() => {
 			selectedFilters.value.estados.includes(estado.nombre),
 		);
 	}
+	if (estadoBuscado.value.trim() !== '') {
+		const busqueda = estadoBuscado.value.trim().toLowerCase();
+		filtered = filtered.filter(estado =>
+			estado.nombre.toLowerCase().includes(busqueda),
+		);
+	}
+	return filtered;
 	if (selectedFilters.value.anios.length) {
 		filtered = filtered.filter(estado =>
 			selectedFilters.value.anios.includes(estado.anio.toString()),
@@ -159,6 +166,15 @@ onMounted(() => {
 				Resumen Índice de Desarrollo Humano en México
 			</h2>
 			<!-- Filtro por Estado -->
+			<div class="searcher-container">
+				<input
+					v-model="estadoBuscado"
+					type="text"
+					class="searcher"
+					placeholder="Buscar por estado"
+					aria-label="Buscar por estado"
+				>
+			</div>
 			<div class="filter-group-row">
 				<select
 					:key="estadoSelectKey"
