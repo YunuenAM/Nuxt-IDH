@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, watch } from 'vue';
 
 const estados = ref([]);
 const estadosUnicos = ref([]);
@@ -74,23 +74,28 @@ const limpiarCampos = () => {
 };
 const filteredEstados = computed(() => {
 	let filtered = [...estados.value];
-	if (selectedFilters.value.estados.length) {
-		filtered = filtered.filter(estado =>
-			selectedFilters.value.estados.includes(estado.nombre),
-		);
-	}
-	if (estadoBuscado.value.trim() !== '') {
-		const busqueda = estadoBuscado.value.trim().toLowerCase();
+	const busqueda = estadoBuscado.value.trim().toLowerCase();
+	const hayBusqueda = busqueda !== '';
+
+	// Si hay búsqueda, filtra por texto y omite el filtro de estados
+	if (hayBusqueda) {
 		filtered = filtered.filter(estado =>
 			estado.nombre.toLowerCase().includes(busqueda),
 		);
 	}
-	return filtered;
+	else if (selectedFilters.value.estados.length) {
+		filtered = filtered.filter(estado =>
+			selectedFilters.value.estados.includes(estado.nombre),
+		);
+	}
+
+	// Filtro por año siempre se aplica (complementario)
 	if (selectedFilters.value.anios.length) {
 		filtered = filtered.filter(estado =>
 			selectedFilters.value.anios.includes(estado.anio.toString()),
 		);
 	}
+
 	return filtered;
 });
 
@@ -156,6 +161,12 @@ const toggleMenu = (index) => {
 onMounted(() => {
 	generarDatos();
 	limpiarCampos();
+});
+watch(estadoBuscado, (nuevoValor) => {
+	if (nuevoValor.trim() !== '') {
+		selectedFilters.value.estados = [];
+		currentPage.value = 1;
+	}
 });
 </script>
 
